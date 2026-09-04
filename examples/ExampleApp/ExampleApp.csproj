@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <!--
+    Deliberately has NO reference to ProgramFlowTracer.Runtime or ProgramFlowTracer.Core.
+    That is the point of the demo: this is an ordinary, unmodified console app. See the top level
+    README for the exact command to instrument and run this example with ProgramFlowTracer.
+    ProgramFlowTracer writes an instrumented copy to a sibling ExampleApp.instrumented directory
+    and adds the Runtime reference there automatically; this project's own .csproj and .cs files
+    are never touched.
+  -->
+
+</Project>

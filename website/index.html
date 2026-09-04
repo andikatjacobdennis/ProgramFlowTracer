@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ProgramFlowTracer &mdash; Trace Viewer</title>
+<link rel="stylesheet" href="css/viewer.css" />
+</head>
+<body>
+
+<header class="appbar">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">ProgramFlowTracer</span>
+    <span class="brand-sub">Trace Viewer</span>
+  </div>
+
+  <div class="run-summary" id="runSummary" hidden>
+    <label class="run-picker" id="runPickerWrap" hidden>
+      <span>Run</span>
+      <select id="runSelect"></select>
+    </label>
+    <dl class="run-facts" id="runFacts"></dl>
+  </div>
+
+  <div class="appbar-actions">
+    <span class="location" id="location" hidden>
+      <span class="location-icon" aria-hidden="true"></span>
+      <span class="location-name" id="locationName"></span>
+    </span>
+    <button type="button" class="btn" id="btnReload" hidden title="Re-read this folder: picks up new runs and events appended since it was opened">Reload</button>
+    <button type="button" class="btn" id="btnOpenFolder">Open run folder&hellip;</button>
+    <button type="button" class="btn" id="btnOpenFiles">Open files&hellip;</button>
+    <button type="button" class="btn btn-quiet" id="btnTheme" title="Toggle light / dark">Theme</button>
+  </div>
+</header>
+
+<main class="layout" id="layout" hidden>
+  <section class="pane pane-left">
+    <div class="toolbar">
+      <div class="field field-search">
+        <input type="search" id="search" placeholder="Filter by method, type, file, parameter&hellip;" autocomplete="off" spellcheck="false" />
+        <span class="field-hint" id="searchHint"></span>
+      </div>
+      <label class="check" title="Treat the filter as a regular expression. Matching is case-insensitive, as it is for plain text."><input type="checkbox" id="useRegex" /> Regex</label>
+      <label class="check"><input type="checkbox" id="onlyErrors" /> Errors only</label>
+      <label class="field field-inline">
+        <span>Min</span>
+        <select id="minDuration">
+          <option value="0">any</option>
+          <option value="100">0.1 ms</option>
+          <option value="1000">1 ms</option>
+          <option value="10000">10 ms</option>
+          <option value="100000">100 ms</option>
+        </select>
+      </label>
+      <label class="field field-inline">
+        <span>Thread</span>
+        <select id="threadFilter"><option value="">all</option></select>
+      </label>
+      <span class="toolbar-spacer"></span>
+      <button type="button" class="btn btn-quiet" id="btnExpand">Expand all</button>
+      <button type="button" class="btn btn-quiet" id="btnCollapse">Collapse</button>
+    </div>
+
+    <div class="tabs" role="tablist">
+      <button type="button" class="tab is-active" data-view="tree" role="tab">Call tree</button>
+      <button type="button" class="tab" data-view="flow" role="tab">Flowchart</button>
+      <button type="button" class="tab" data-view="methods" role="tab">Methods</button>
+      <button type="button" class="tab" data-view="brief" role="tab">Brief</button>
+      <button type="button" class="tab" data-view="events" role="tab">Raw events</button>
+      <span class="tab-count" id="tabCount"></span>
+    </div>
+
+    <div class="scroll" id="treeView" role="tree"></div>
+    <div class="scroll hidden" id="flowView"></div>
+    <div class="scroll hidden" id="methodsView"></div>
+    <div class="scroll hidden" id="briefView"></div>
+    <div class="scroll hidden" id="eventsView"></div>
+  </section>
+
+  <div class="splitter" id="splitter" role="separator" aria-orientation="vertical"
+       aria-label="Resize the details pane" tabindex="0" title="Drag to resize · double-click to reset"></div>
+
+  <section class="pane pane-right">
+    <div class="scroll" id="detailsView"></div>
+  </section>
+</main>
+
+<section class="welcome" id="welcome">
+  <div class="welcome-card">
+    <h1>Open a trace</h1>
+    <p>
+      Point the viewer at a run directory produced by <code>ProgramFlowTracer</code> &mdash;
+      typically <code>&lt;YourApp&gt;/.flowtrace/runs/&lt;run-guid&gt;/</code>.
+    </p>
+    <div class="welcome-actions">
+      <button type="button" class="btn btn-primary" id="btnOpenFolder2">Open run folder&hellip;</button>
+      <button type="button" class="btn" id="btnOpenFiles2">Open <code>events.jsonl</code>&hellip;</button>
+      <button type="button" class="btn btn-quiet" id="btnSample">Load bundled sample</button>
+    </div>
+    <p class="welcome-reopen" id="welcomeReopen" hidden>
+      <button type="button" class="btn btn-quiet" id="btnReopen"></button>
+      <button type="button" class="btn-link" id="btnForget">forget it</button>
+    </p>
+    <p class="welcome-hint">&hellip;or drag the run folder anywhere onto this page.</p>
+    <details class="welcome-details">
+      <summary>What the viewer reads</summary>
+      <ul>
+        <li><code>events.jsonl</code> &mdash; required. One <code>MethodEnter</code> / <code>MethodExit</code> / <code>Exception</code> record per line.</li>
+        <li><code>run.json</code> &mdash; optional run metadata (application, timings, dropped-event count).</li>
+        <li><code>objects/*.json</code> &mdash; optional. Large captured values spilled out of the event stream; loading them lets the viewer resolve <code>objectId</code> references inline.</li>
+      </ul>
+      <p>
+        The viewer keeps a handle to the <em>folder location</em> you pick, so <strong>Reload</strong>
+        re-reads it in place &mdash; new runs and events appended since show up without re-picking
+        anything, and there is never a copy of the trace to package up and keep in sync.
+      </p>
+      <p>Everything is parsed in your browser. No file ever leaves this machine.</p>
+    </details>
+    <p class="welcome-error" id="welcomeError" hidden></p>
+  </div>
+</section>
+
+<div class="dropveil" id="dropveil" hidden><div>Drop a trace run to open it</div></div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<input type="file" id="filePicker" multiple accept=".jsonl,.json" hidden />
+<input type="file" id="dirPicker" webkitdirectory directory multiple hidden />
+
+<script src="js/format.js"></script>
+<script src="js/clipboard.js"></script>
+<script src="js/model.js"></script>
+<script src="js/loader.js"></script>
+<script src="js/filter.js"></script>
+<script src="js/partition.js"></script>
+<script src="js/fsaccess.js"></script>
+<script src="js/virtual.js"></script>
+<script src="js/tree.js"></script>
+<script src="js/flow.js"></script>
+<script src="js/details.js"></script>
+<script src="js/methods.js"></script>
+<script src="js/brief.js"></script>
+<script src="js/app.js"></script>
+<script src="sample/sample-trace.js"></script>
+</body>
+</html>
