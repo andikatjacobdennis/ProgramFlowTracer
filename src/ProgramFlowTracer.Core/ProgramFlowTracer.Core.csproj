@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>ProgramFlowTracer.Core</RootNamespace>
+    <AssemblyName>ProgramFlowTracer.Core</AssemblyName>
+    <Description>Roslyn-based instrumentation engine for ProgramFlowTracer: loads a C# project/solution, analyzes it semantically, and rewrites method bodies to inject calls into ProgramFlowTracer.Runtime.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.11.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.11.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.11.0" />
+    <PackageReference Include="Microsoft.Build.Locator" Version="1.7.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ProgramFlowTracer.Runtime\ProgramFlowTracer.Runtime.csproj" />
+  </ItemGroup>
+
+</Project>
