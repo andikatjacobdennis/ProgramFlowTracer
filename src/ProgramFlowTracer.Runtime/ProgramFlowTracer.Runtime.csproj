@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>ProgramFlowTracer.Runtime</RootNamespace>
+    <AssemblyName>ProgramFlowTracer.Runtime</AssemblyName>
+    <Description>Runtime tracing library injected into instrumented applications by ProgramFlowTracer. Has no dependency on Roslyn.</Description>
+  </PropertyGroup>
+
+</Project>
